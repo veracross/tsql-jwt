@@ -1,6 +1,10 @@
 ----------------------------
 -- XML to JSON Conversion --
 ----------------------------
+if object_id('dbo.XmlToJson') is not null
+  drop function dbo.XmlToJson
+go
+
 create function dbo.XmlToJson(@xmldata xml)
 returns nvarchar(max)
 as
@@ -35,9 +39,17 @@ end
 
 go
 
+grant execute on dbo.XmlToJson to public
+
+go
+
 ---------------------
 -- HMAC Encryption --
 ---------------------
+if object_id('dbo.HMAC') is not null
+  drop function dbo.HMAC
+go
+
 create function dbo.HMAC(
  @key   varchar(max),
  @message varchar(max),
@@ -81,9 +93,17 @@ end;
 
 go
 
+grant execute on dbo.HMAC to public
+
+go
+
 ---------------------
 -- Base64 Encoding --
 ---------------------
+if object_id('dbo.Base64') is not null
+  drop function dbo.Base64
+go
+
 create function dbo.Base64(
   @data varbinary(max),
   @url_safe bit
@@ -106,9 +126,17 @@ end
 
 go
 
+grant execute on dbo.Base64 to public
+
+go
+
 -----------------------------
 -- JSON Web Token Creation --
 -----------------------------
+if object_id('dbo.JWT_Encode') is not null
+  drop function dbo.JWT_Encode
+go
+
 create function dbo.JWT_Encode(@header varchar(max), @payload varchar(max), @secret varchar(max))
 returns varchar(max)
 as
@@ -126,6 +154,10 @@ begin
 
   return @h + '.' + @d + '.' + @sig
 end
+
+go
+
+grant execute on dbo.JWT_Encode to public
 
 go
 
