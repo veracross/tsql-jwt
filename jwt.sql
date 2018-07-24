@@ -155,7 +155,15 @@ as
 begin
   declare @base64string varchar(max)
 
-  select @base64string = cast('' as xml).value('xs:base64Binary(sql:variable(''@data''))', 'varchar(max)')
+   -- When converting a table to json, binary data in the table is converted to a BASE64 String
+  select @base64string = col
+  from openjson(
+    (
+      select col
+      from (select @data col) T
+      for json auto
+    )
+  ) with(col varchar(max))
 
   if @url_safe = 1
   begin
