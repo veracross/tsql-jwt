@@ -17,9 +17,10 @@ begin
                         (
                             select ',"'
                                     + coalesce(b.c.value('local-name(.)', 'nvarchar(max)'), '')
-                                    + '":"'
+                                    + '":'
+                                    + IIF(ISNUMERIC(b.c.value('text()[1]','nvarchar(max)')) = 1, '', '"')
                                     + b.c.value('text()[1]','nvarchar(max)')
-                                    + '"'
+                                    + IIF(ISNUMERIC(b.c.value('text()[1]','nvarchar(max)')) = 1, '', '"')
 
                             from    x.a.nodes('*') b(c)
 
