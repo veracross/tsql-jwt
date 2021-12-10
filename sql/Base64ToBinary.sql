@@ -5,7 +5,7 @@ create or alter function dbo.Base64ToBinary (
 returns varbinary(max)
 as
 begin
-    declare @binaryData varbinary(max)
+    declare @binary_data varbinary(max)
 
 
     if @url_safe = 1
@@ -15,7 +15,7 @@ begin
     end
 
 
-    select  @binaryData = col
+    select  @binary_data = col
 
     from    openjson(
                 (
@@ -26,7 +26,7 @@ begin
             ) with(col varbinary(max))
 
 
-    return @binaryData
+    return @binary_data
 end
 go
 
