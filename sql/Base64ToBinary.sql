@@ -12,6 +12,7 @@ begin
     begin
         select @data = replace(@data, '-', '+')
         select @data = replace(@data, '_', '/')
+        select @data = @data + replicate('=', (4 - len(@data) % 4) % 4)
     end
 
 

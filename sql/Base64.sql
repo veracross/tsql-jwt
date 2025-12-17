@@ -24,6 +24,7 @@ begin
     begin
         select @base64string = replace(@base64string, '+', '-')
         select @base64string = replace(@base64string, '/', '_')
+        select @base64string = replace(@base64string, '=', '')
     end
 
 
