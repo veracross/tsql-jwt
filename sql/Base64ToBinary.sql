@@ -5,29 +5,9 @@ create or alter function dbo.Base64ToBinary (
 returns varbinary(max)
 as
 begin
-    declare @binary_data varbinary(max)
-
-
-    if @url_safe = 1
-    begin
-        select @data = replace(@data, '-', '+')
-        select @data = replace(@data, '_', '/')
-        select @data = @data + replicate('=', (4 - len(@data) % 4) % 4)
-    end
-
-
-    select  @binary_data = col
-
-    from    openjson(
-                (
-                    select col
-                    from (select @data col) T
-                    for json auto
-                )
-            ) with(col varbinary(max))
-
-
-    return @binary_data
+    -- SQL Server 2025+: base64_decode accepts both the standard and url safe alphabets, with or
+    -- without = padding, so @url_safe is no longer needed and is kept for backwards compatibility
+    return base64_decode(@data)
 end
 go
 

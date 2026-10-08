@@ -42,6 +42,7 @@
     Omit insecure hash algorithms such as MD2 through MD5
     2005-2008R2: SHA1
     2012-2016: SHA1 | SHA2_256 | SHA2_512
+    SHA1 and SHA2_256 use a 512 bit block, SHA2_512 uses a 1024 bit block
 */
 create or alter function dbo.HMAC (
     @key    varbinary(max),
@@ -51,36 +52,32 @@ create or alter function dbo.HMAC (
 returns varbinary(64)
 as
 begin
-    declare @ipad   bigint
-    declare @opad   bigint
-    declare @i      varbinary(64)
-    declare @o      varbinary(64)
-    declare @pos    integer
+    declare @ipad       bigint
+    declare @opad       bigint
+    declare @i          varbinary(128)
+    declare @o          varbinary(128)
+    declare @pos        integer
+    declare @block_size integer
 
-    -- SQL 2005 only allows XOR operations on integer types, so use bigint and iterate 8 times
+    -- SQL only allows XOR operations on integer types, so use bigint and iterate over the key 8 bytes at a time
     set @ipad = cast(0x3636363636363636 as bigint) -- constants from HMAC definition
     set @opad = cast(0x5C5C5C5C5C5C5C5C as bigint)
 
-    if len(@key) > 64 -- if the key is greater than 512 bits we hash it first per HMAC definition
-        set @key = cast(hashbytes(@algo, @key) as binary (64))
-    else
-        set @key = cast(@key as binary (64)) -- otherwise pad it out to 512 bits with zeros
+    set @block_size = case when @algo = 'SHA2_512' then 128 else 64 end
+
+    if datalength(@key) > @block_size -- if the key is longer than the block size we hash it first per HMAC definition
+        set @key = hashbytes(@algo, @key)
+
+    set @key = cast(@key as binary (128)) -- pad it out to the block size with zeros
 
     set @pos = 1
-    set @i = cast('' AS varbinary(64)) -- initialize as empty binary value
+    set @i = 0x -- initialize as empty binary values
+    set @o = 0x
 
-    while @pos <= 57
+    while @pos < @block_size
     begin
-        set @i = @i + cast((substring(@key, @pos, 8) ^ @ipad) as varbinary(64))
-        set @pos = @pos + 8
-    end
-
-    set @pos = 1
-    set @o = cast('' as varbinary(64)) -- initialize as empty binary value
-
-    while @pos <= 57
-    begin
-        set @o = @o + cast((substring(@key, @pos, 8) ^ @opad) as varbinary(64))
+        set @i = @i + cast((substring(@key, @pos, 8) ^ @ipad) as binary(8))
+        set @o = @o + cast((substring(@key, @pos, 8) ^ @opad) as binary(8))
         set @pos = @pos + 8
     end
 

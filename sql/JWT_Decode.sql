@@ -8,38 +8,38 @@ begin
     declare @header varchar(max),
             @payload varchar(max),
             @signature varchar(max),
-            @signature_verify varchar(max)
+            @signature_verify varchar(max),
+            @first_dot bigint,
+            @second_dot bigint
 
 
-    declare @token_components table (
-        token_index int,
-        token_value varchar(max)
-    )
+    -- A token must have exactly three segments: header.payload.signature
+    select @first_dot = charindex('.', @token)
+    select @second_dot = charindex('.', @token, @first_dot + 1)
 
-
-    insert  @token_components (token_index, token_value)
-
-    select  token_index = row_number() over (order by patindex(value, @token)),
-            token_value = value
-
-    from    string_split(@token, '.');
-
-
-    select @header = token_value from @token_components where token_index = 1
-    select @payload = token_value from @token_components where token_index = 2
-    select @signature = token_value from @token_components where token_index = 3
-
-
-    select @signature_verify = dbo.Base64(dbo.HMAC(convert(varbinary(max), @secret), convert(varbinary(max), @header + '.' + @payload), 'SHA2_256'), 1)
-
-
-    if @signature_verify != @signature
+    if @first_dot = 0 or @second_dot = 0 or charindex('.', @token, @second_dot + 1) > 0
     begin
         return '{"errorMessage":"Invalid Token", "errorCode":"500"}'
     end
 
 
-    return convert(varchar(max), dbo.Base64ToBinary(@payload, 1))
+    select @header = substring(@token, 1, @first_dot - 1)
+    select @payload = substring(@token, @first_dot + 1, @second_dot - @first_dot - 1)
+    select @signature = substring(@token, @second_dot + 1)
+
+
+    select @signature_verify = base64_encode(dbo.HMAC(convert(varbinary(max), @secret), convert(varbinary(max), @header + '.' + @payload), 'SHA2_256'), 1)
+
+
+    -- Compare as binary: string comparison is case insensitive under most collations and ignores trailing spaces
+    if convert(varbinary(max), @signature) != convert(varbinary(max), @signature_verify)
+        or datalength(@signature) != datalength(@signature_verify)
+    begin
+        return '{"errorMessage":"Invalid Token", "errorCode":"500"}'
+    end
+
+
+    return convert(varchar(max), base64_decode(@payload))
 end
 go
 
