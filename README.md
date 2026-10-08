@@ -39,16 +39,4 @@ scripts/run.sh bench [git_ref] [label]  # deploy sql/ (from git_ref if given) an
 scripts/run.sh down                     # stop and remove the container
 ```
 
-Benchmark results are appended to `bench/results.csv` (ignored by git). Median microseconds per call, measured in the emulated
-container, so compare rows with each other rather than reading them as absolute numbers:
-
-| case                        | baseline | fixes | sql2025-base64 |
-|-----------------------------|---------:|------:|---------------:|
-| JWT_Encode set              |    134.9 | 123.5 |           62.7 |
-| JWT_Encode loop             |    262.5 | 228.3 |          101.3 |
-| JWT_Decode set              |    528.4 | 173.5 |           83.6 |
-| JWT_Decode loop             |    552.3 | 197.9 |          106.5 |
-| JWT_Decode 5KB payload loop |    909.5 | 541.9 |          201.7 |
-| HMAC set                    |     57.0 |  50.1 |           51.5 |
-| Base64 set                  |     19.9 |  20.0 |           <0.1 |
-| Base64ToBinary set          |     34.6 |  34.3 |            2.1 |
+Benchmark results are appended to `bench/results.csv` (ignored by git), so runs of different versions can be compared.
