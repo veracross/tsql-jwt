@@ -79,7 +79,9 @@ bench() {
     local out
     out="$(sed "s/\$(label)/$label/g" "$ROOT/bench/bench.sql" | sqlcmd "$DB" -b -h -1 -W -s ',')"
     echo "$out"
-    echo "$out" | grep '^bench,' | sed 's/^bench,//' >> "$ROOT/bench/results.csv"
+    local results="$ROOT/bench/results.csv"
+    [[ -f "$results" ]] || echo "label,case,calls,median_ms,us_per_call" > "$results"
+    echo "$out" | grep '^bench,' | sed 's/^bench,//' >> "$results"
 }
 
 cmd="${1:-}"; shift || true

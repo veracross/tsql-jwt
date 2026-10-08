@@ -39,7 +39,7 @@ scripts/run.sh bench [git_ref] [label]  # deploy sql/ (from git_ref if given) an
 scripts/run.sh down                     # stop and remove the container
 ```
 
-Benchmark results are appended to `bench/results.csv`. Median microseconds per call, measured in the emulated
+Benchmark results are appended to `bench/results.csv` (ignored by git). Median microseconds per call, measured in the emulated
 container, so compare rows with each other rather than reading them as absolute numbers:
 
 | case                        | baseline | fixes | sql2025-base64 |
