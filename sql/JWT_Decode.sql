@@ -25,10 +25,10 @@ begin
 
     select @header = substring(@token, 1, @first_dot - 1)
     select @payload = substring(@token, @first_dot + 1, @second_dot - @first_dot - 1)
-    select @signature = substring(@token, @second_dot + 1, datalength(@token))
+    select @signature = substring(@token, @second_dot + 1)
 
 
-    select @signature_verify = dbo.Base64(dbo.HMAC(convert(varbinary(max), @secret), convert(varbinary(max), @header + '.' + @payload), 'SHA2_256'), 1)
+    select @signature_verify = base64_encode(dbo.HMAC(convert(varbinary(max), @secret), convert(varbinary(max), @header + '.' + @payload), 'SHA2_256'), 1)
 
 
     -- Compare as binary: string comparison is case insensitive under most collations and ignores trailing spaces
@@ -39,7 +39,7 @@ begin
     end
 
 
-    return convert(varchar(max), dbo.Base64ToBinary(@payload, 1))
+    return convert(varchar(max), base64_decode(@payload))
 end
 go
 
